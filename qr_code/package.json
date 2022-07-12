@@ -1,0 +1,29 @@
+{
+  "name": "qr_code",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.18.6",
+    "@babel/plugin-transform-arrow-functions": "^7.18.6",
+    "@babel/plugin-transform-async-to-generator": "^7.18.6",
+    "@babel/plugin-transform-block-scoping": "^7.18.6",
+    "@babel/plugin-transform-exponentiation-operator": "^7.18.6",
+    "@babel/plugin-transform-literals": "^7.18.6",
+    "@babel/plugin-transform-template-literals": "^7.18.6",
+    "@babel/preset-env": "^7.18.6",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "core-js": "^3.23.4",
+    "rollup": "^2.76.0"
+  },
+  "dependencies": {
+    "qrcode-svg": "^1.1.0"
+  }
+}

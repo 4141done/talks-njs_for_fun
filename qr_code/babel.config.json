@@ -1,0 +1,30 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "debug": true,
+        "corejs": "3.21",
+        // Find core-js modules to include or exclude here: https://github.com/zloirock/core-js#ecmascript
+        "include": ["es.set", "es.symbol"],
+        "exclude": [
+          "es.json.stringify", // the polyfill for stringify is incompatible with njs' regex engine, pcre
+          "@babel/plugin-transform-block-scoping", // njs native support  (`let`, `const`)
+          "@babel/plugin-transform-exponentiation-operator", // njs native support  (ex 2**2)
+          "@babel/plugin-transform-template-literals", // njs native support ( const foo = 4; `I am ${foo} years old`)
+          "@babel/plugin-transform-async-to-generator", // njs native support (`async`, `await`)
+          "@babel/plugin-transform-literals", // njs native support,
+          "@babel/plugin-transform-arrow-functions", // njs native support
+          "es.array.map", // njs supports
+          "es.regexp.exec",
+          "es.string.split",
+          "es.function.name",
+          "es.promise",
+          "es.number.constructor"
+        ]
+      }
+    ]
+  ]
+}
+
