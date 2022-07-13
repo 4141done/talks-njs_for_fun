@@ -187,3 +187,93 @@ Lastly, we export the function from the helper script as part of this script's i
 You can test the output like so:
 `http://localhost:4000/?content=Thanks%20for%20scanning%20this%20QR%20code,%20friend.`
 Testing the script is best done in the browser.
+
+## Full Code
+
+`qr-code.mjs`
+```javascript
+import QRCode from 'qrcode-svg'; // Note that for the bundler, import * as y can't be used
+import helper from 'helper.mjs';
+const qs = require('querystring');
+
+const NGINX_GREEN = "#099639";
+const WHITE = "#000000";
+const QR_CODE_PADDING_PX = 4;
+const QR_CODE_SIZE_PX = 256;
+
+function generateQRCode(r) {
+  // Pull in the parsed arguments ready for use with the
+  // QR code generator
+  const QRCodeContent = r.variables.qr_code_content;
+
+  if (QRCodeContent) {
+    const code = new QRCode({
+      content: QRCodeContent,
+      padding: QR_CODE_PADDING_PX,
+      width: QR_CODE_SIZE_PX,
+      height: QR_CODE_SIZE_PX,
+      color: NGINX_GREEN,
+      background: WHITE,
+    }).svg();
+
+    r.headersOut['Content-Type'] = 'image/svg+xml';
+    r.return(200, code);
+  } else {
+    r.return(200, 'Invalid input.  ex: DOMAIN.com?content=yourtext');
+  }
+}
+
+export default { generateQRCode, getQRCodeContent: helper.prepareContent };
+```
+
+`helper.mjs`
+```javascript
+const qs = require('querystring');
+
+function prepareContent(req) {
+  const rawContent = req.args.content;
+  return parseContent(rawContent);
+}
+
+function parseContent(rawContent) {
+  if (rawContent) {
+    return qs.unescape(rawContent);
+  } else {
+    return null;
+  }
+}
+export default { prepareContent };
+```
+
+`nginx.conf`
+```nginx
+# load the njs module to allow us to use js_* directives
+load_module modules/ngx_http_js_module.so;
+
+error_log /tmp/nginx_error.log debug;
+
+events {}
+
+http {
+  js_import qr_code from _build/qr-code.js;
+
+  # Use an nginx variable to parse the input. This will remove the
+  # escaping done to included it as a query parameter
+  # The function provided will be invoked lazily when
+  # the variable is first referenced
+  js_set $qr_code_content qr_code.getQRCodeContent;
+
+  server {
+    listen 4003;
+
+    location / {
+      # Pass the parsed content of the QR code back as a header
+      add_header QR-Code-Content $qr_code_content;
+
+      # Invoke the function from `_build/qr-code.js` to
+      # build the QR code.
+      js_content qr_code.generateQRCode;
+    }
+  }
+}
+```

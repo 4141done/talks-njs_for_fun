@@ -146,3 +146,71 @@ All we need to do is remove the `Content-Length` header and NGINX will use chunk
 
 ## Final tests
 `curl -H "Accept: application/json" http://localhost:4002/listings/1 | jq`
+
+## Full Code
+```javascript
+// Easily edit as an object, transform to this form:
+// [['dog[^s]', 'human child'], ..] for easy replacement
+const replacements = Object.entries({
+  'dog[^s]': 'human child',
+  dogs: 'human children',
+  'leash[^es]': 'a really fun toy',
+  park: 'fun playground for human games',
+  bark: 'cry'
+});
+
+function translate(req, data, flags) {
+  // Apply all the replacements one at a time
+  const newBody = replacements
+    .reduce((acc, kvPair) => {
+      const regex = kvPair[0];
+      const replacement = kvPair[1];
+
+      return acc.replace(new RegExp(regex, 'ig'), replacement)
+    }, data);
+
+  // Add the chunk to the buffer. `js_body_filter`
+  // will handle collecting and transferring them
+  req.sendBuffer(newBody, flags);
+}
+
+function removeContentLengthHeader(req) {
+  // Clear the `Content-Length` header to
+  // cause nginx to used chunked transfer encoding
+  delete req.headersOut['Content-Length'];
+}
+
+export default { translate, removeContentLengthHeader };
+```
+
+`nginx.conf`
+```nginx
+# load the njs module to allow us to use js_* directives
+load_module modules/ngx_http_js_module.so;
+
+events {}
+
+http {
+  # Old AirBnb for Dogs webapp I forgot how to maintain
+  js_import listings from mock_server/doggy-daycare.mjs;
+  include mock_server/doggy_daycare.conf;
+
+  # import the javascript module `dogs-to-children.mjs`
+  # aliased as `dogs_to_children`
+  js_import dogs_to_children from dogs-to-children.mjs;
+
+  server {
+    listen 4002;
+
+    location /listings/ {
+      # Applies the js function `translate` to the outbound body
+      js_body_filter dogs_to_children.translate;
+
+      # Applies the js function removeContentLengthHeader to
+      # modify outbound headers
+      js_header_filter dogs_to_children.removeContentLengthHeader;
+      proxy_pass http://localhost:4001;
+    }
+  }
+}
+```
