@@ -26,14 +26,14 @@ http {
   }
 }
 ```
-the `load_module` directive simple loads the module necessary to use njs which are a collection of `js_*` directives.
+the `load_module` directive simply loads the module necessary to use njs via the `js_*` directives defined [here](https://nginx.org/en/docs/http/ngx_http_js_module.html).  This is necessary when the module is compiled as a dynamic module.  
 
 Below that, in the `http` context you'll see the first njs directive we'll introduce which is `js_import`. This directive simply takes a path to a javascript file and optionally allows you to provide an alias for the functions or data exported from that file.
 
 For example, let's take a look at the file `weather-auth.mjs`.
 
 ```javascript
-async function doAuth(req) {
+async function doAuth(r) {
   // Your content here
 }
 
@@ -55,11 +55,12 @@ Next, we will add the endpoint to serve the Precious Poetry. To do this, we'll a
 ```
 
 This will serve our Precious Poetry from the root.  So `curl http://localhost:4000` will display our Precious Poetry.
-This snippet also introduces our second njs directive: `js_content`.  This directive simply returns a response based on a script. To understand how this works, let's move to the relevant portion of our mock data script, `./mock_server/precious-poetry.mjs`.
+
+This snippet also introduces our second njs directive: `js_content`.  This directive uses the supplied script as the content handler for that `location` context.  The content returned must be returned using `r.return` where `r` is the njs request object that is passed in automatically when the function is invoked by njs. To understand how this works, let's move to the relevant portion of our mock data script, `./mock_server/precious-poetry.mjs`.
 
 ```javascript
-function preciousWeatherPoetry(req){
-  req.return(200, JSON.stringify(poems));
+function preciousWeatherPoetry(r){
+  r.return(200, JSON.stringify(poems));
 }
 
 export default { preciousWeatherPoetry };
@@ -70,7 +71,7 @@ Here, the function `preciousWeatherPoetry` will be invoked by `js_content` and p
 So we can test this by reloading the config and calling
 `curl http://localhost:4000/ | jq -r '.poems[0]`
 
-## Adding Security
+## Adding Authorization
 Now that we are serving the Precious Poetry, we need to lock it down.  For this we will use the [ngx_http_auth_request_module](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html) to streamline the creation of a subrequest to an authorization endpoint that we will also write in njs.
 
 ```nginx
@@ -98,8 +99,8 @@ This adds the necessary endpoint.  The `internal` directive just makes sure that
 The `js_content` below that is our main auth script. Let's look at that.
 
 ```javascript
-async function doAuth(req) {
-    req.return(200);
+async function doAuth(r) {
+    r.return(200);
 }
 
 export default { doAuth };
@@ -109,7 +110,7 @@ This should look similar to our mock data script.  Remember that `auth_request` 
 
 Reload the server and verify that this still works. `curl http://localhost:4000/ | jq -r '.poems[0]`
 
-Now let's briefly change the response to be `req.return(401);`. `curl http://localhost:4000/`
+Now let's briefly change the response to be `r.return(401);`. `curl http://localhost:4000/`
 Now we see a 401 page so we know the `auth_request` directive is interacting with our njs script as we expect.  Now all we need to do is add the logic to bar smug people in good weather.
 
 ## Checking the weather
@@ -119,7 +120,7 @@ Next, set your api key as an environment variable `export WEATHER_API_KEY=yourke
 We first need to make sure we have the user's location as well as the API key. In `weather-auth.mjs` add:
 
 ```javascript
-  const location = req.headersIn['User-Location'];
+  const location = r.headersIn['User-Location'];
   const APIKey = process.env['WEATHER_API_KEY'];
 ```
 
@@ -134,7 +135,7 @@ Next we will add the code to call the weather API:
   const resp = await ngx.fetch(uri);
 
   if (!resp.ok) {
-    return req.return(401);
+    return r.return(401);
   }
 
   const weather = await resp.json();
@@ -166,156 +167,17 @@ So knowing this, I'll add some simple code:
   const conditionCode = weather.current.condition.code;
 
   if (conditionCode >= PARTLY_CLOUDY) {
-    req.return(200);
+    r.return(200);
   } else {
-    req.return(401);
+    r.return(401);
   }
 ```
 
 All this does is find the weather code in the json response, then do a simple if-statement to either return `200` or `401` if the weather is partly cloudy or worse.
 
-## Full Code
-### `nginx.conf`
-```nginx
-load_module modules/ngx_http_js_module.so;
-
-events {}
-
-http {
-  js_import weather_auth from weather-auth.mjs;
-  js_import poetry from mock_server/precious-poetry.mjs;
-
-
-  server {
-    listen 4000;
-
-    location / {
-      auth_request     /auth;
-      js_content poetry.preciousWeatherPoetry;
-    }
-
-    location /auth {
-      internal;
-
-      # DNS for external request
-      resolver 1.1.1.1;
-      js_content weather_auth.doAuth;
-    }
-  }
-}
-```
-
-### `weather-auth.mjs`
-```javascript
-const PARTLY_CLOUDY = 1003;
-
-async function doAuth(req) {
-  const location = req.headersIn['User-Location'];
-  const APIKey = process.env['WEATHER_API_KEY'];
-
-  const qs = require('querystring');
-  const encodedLocation = qs.escape(location);
-
-  const uri = `http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${encodedLocation}`;
-  const resp = await ngx.fetch(uri);
-
-  if (!resp.ok) {
-    return req.return(401);
-  }
-
-  const weather = await resp.json();
-
-  // {
-  //   current: {
-  //     condition: {
-  //       text: 'Partly Cloudy',
-  //       code: 1003
-  //     }
-  //   }
-  // }
-  const conditionCode = weather.current.condition.code;
-
-  if (conditionCode >= PARTLY_CLOUDY) {
-    req.return(200);
-  } else {
-    req.return(401);
-  }
-}
-
-export default { doAuth };
-```
-
-### `./mock_server/precious-poetry`
-For this file, you can add the weather poems that come from your heart.
-```javascript
-function preciousWeatherPoetry(req) {
-  req.headersOut['Content-Type'] = 'application/json';
-
-  // Show up nicely when done like so: curl localhost:4002 | jq -r '.poems[0]'
-  const poems = {
-    poems: [
-      `
-      It's a rainy day
-      In my head
-      In my heart
-      In my general vicinity
-
-      The people I meet look at me with soggy eyes
-      Let's make a hearty breakfast.
-      `,
-
-      `
-      The local sandwich shop
-      There are no windows and no doors
-      The interior is pitch black
-
-      Steve will make you a sandwich
-      While the rain falls on to the bread
-
-      Steve's Soggy Sandwich Sale
-      Selected Sandwiches Served Slightly Soggy
-      Savor
-      Savor
-
-      Thank you, Steve
-      `,
-
-      `
-      A grey morning greets my eyes
-      Awakened by the seagull's cry
-
-      There's rain in my boots as I reach the bus stop
-      Silly Socks Sopping Wet
-
-      You and I acknowledge each other
-      It's not great weather today, is it?
-
-      No it is not.
-
-      But we are here.
-
-      Siblings Soggy Sockery
-      `
-    ]
-  }
-
-  req.return(200, JSON.stringify(poems));
-}
-
-export default { preciousWeatherPoetry };
-```
-
-And as a reminder, the file structure looks like this:
-```bash
-.
-├── mock_server
-│   └── precious-poetry.mjs
-├── nginx.conf
-└── weather-auth.mjs
-```
-
 ## Testing it out
 You can now try the whole request to see if you get let in.  Here are some premade test requests:
 `curl -H 'User-Location: Seattle, WA' http://localhost:4000/`
 `curl -H 'User-Location: Seoul, Korea' http://localhost:4000/`
+
 

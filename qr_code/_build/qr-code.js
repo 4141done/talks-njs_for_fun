@@ -1,5 +1,3 @@
-import helper from 'helper.mjs';
-
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 var check = function (it) {
@@ -3522,38 +3520,73 @@ var qrcode = {exports: {}};
 
 var QRCode = qrcode.exports;
 
-require('querystring');
+/**
+ * Contains the handlers to be invoked by the
+ * `js_content` directive for serving an svg QR code.
+ * @module qr-code
+ */
 
+// Variables to style the qr code
 const NGINX_GREEN = "#099639";
 const WHITE = "#000000";
 const QR_CODE_PADDING_PX = 4;
 const QR_CODE_SIZE_PX = 256;
 
+// In this case, querystring is provided by njs
+// see: https://nginx.org/en/docs/njs/reference.html#querystring
+const qs = require('querystring');
+
+/**
+ * Reads query string parameters from the client
+ * and generates a qr code as svg markup as the response
+ * body while setting the correct MIME type.
+ * 
+ * It expects query string param called "content",
+ * If this parameter is not provided, a 400 status
+ * code will be returned
+ * 
+ * njs invocation: `js_content`
+ * @param {Object}  r - The njs request object
+ */
 function generateQRCode(r) {
-  // Pull in the parsed arguments ready for use with the
-  // QR code generator
-  const QRCodeContent = r.variables.qr_code_content;
+  let content;
 
-  if (QRCodeContent) {
-    const code = new QRCode({
-      content: QRCodeContent,
-      padding: QR_CODE_PADDING_PX,
-      width: QR_CODE_SIZE_PX,
-      height: QR_CODE_SIZE_PX,
-      color: NGINX_GREEN,
-      background: WHITE,
-    }).svg();
-
-    r.headersOut['Content-Type'] = 'image/svg+xml';
-    r.return(200, code);
+  // Since the `content` query param comes percent encoded
+  // we are making sure that the content is decoded before
+  // proceeding.  Ex: 'hello%20world' -> 'hello world'
+  if (r.args.content) {
+    content = qs.unescape(r.args.content);
   } else {
-    r.return(200, 'Invalid input.  ex: DOMAIN.com?content=yourtext');
+    return r.return(400, "'content' query param is required");
   }
+
+  // This code simply follows the library usage
+  // instructions which can be found at
+  // https://github.com/papnkukn/qrcode-svg#readme
+  const code = new QRCode({
+    content: content,
+    padding: QR_CODE_PADDING_PX,
+    width: QR_CODE_SIZE_PX,
+    height: QR_CODE_SIZE_PX,
+    color: NGINX_GREEN,
+    background: WHITE,
+  }).svg();
+
+  // Setting the `Content-Type` header helps the browser
+  // render the svg qr code correctly.
+  r.headersOut['Content-Type'] = 'image/svg+xml';
+  r.return(200, code);
 }
 
-// NJS only supports `export default`.  Therefore anything you want to call
-// from the NGINX context needs to be exported here in the object.
-// It is also possible to just import a single function.
-var qrCode = { generateQRCode, getQRCodeContent: helper.prepareContent };
+// We export an object containing various keys.  The keys may be referenced in the
+// `nginx.conf` using dot notation.  For example, this module exposes:
+// `<this_module>.generateQRCode` where `<this_module>` is the name of the js file as
+// included in the configuration using `js_import`
+// See https://nginx.org/en/docs/http/ngx_http_js_module.html#js_import
+//
+// For njs, you **MUST** use `export default` although the exported item
+// does not have to be an object necessarily. It is conventional, however,
+// to export an object and define items as keys on the object.
+var qrCode = { generateQRCode };
 
 export default qrCode;
