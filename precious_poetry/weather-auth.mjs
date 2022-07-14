@@ -1,6 +1,6 @@
 const PARTLY_CLOUDY = 1003;
 
-async function doAuth(req) {
+async function doAuth(r) {
 
 }
 

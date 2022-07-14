@@ -1,5 +1,5 @@
-function preciousWeatherPoetry(req) {
-  req.headersOut['Content-Type'] = 'application/json';
+function preciousWeatherPoetry(r) {
+  r.headersOut['Content-Type'] = 'application/json';
 
   // Show up nicely when done like so: curl localhost:4002 | jq -r '.poems[0]'
   const poems = {
@@ -49,7 +49,7 @@ function preciousWeatherPoetry(req) {
     ]
   }
 
-  req.return(200, JSON.stringify(poems));
+  r.return(200, JSON.stringify(poems));
 }
 
 export default { preciousWeatherPoetry };

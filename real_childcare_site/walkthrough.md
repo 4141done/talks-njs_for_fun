@@ -64,8 +64,8 @@ This tells us that we'll filter the body returned by the upstream using the func
 Let's open that file:
 
 ```javascript
-function translate(req, data, flags) {
-  req.sendBuffer(data, flags);
+function translate(r, data, flags) {
+  r.sendBuffer(data, flags);
 }
 
 export default { translate };
@@ -99,7 +99,7 @@ This code simply defines an object with keys that are regex compatible expressio
 
 Next, we'll add some code to perform the substitution and complete the `translate` function:
 ```javascript
-function translate(req, data, flags) {
+function translate(r, data, flags) {
   const newBody = replacements
     .reduce((acc, kvPair) => {
       const regex = kvPair[0];
@@ -110,7 +110,7 @@ function translate(req, data, flags) {
 
   // Add the chunk to the buffer. `js_body_filter`
   // will handle collecting and transferring them
-  req.sendBuffer(newBody, flags);
+  r.sendBuffer(newBody, flags);
 }
 ```
 
@@ -134,8 +134,8 @@ js_header_filter dogs_to_children.removeContentLengthHeader;
 
 Next, well create the function `removeContentLengthHeader` in `dogs-to-children.mjs`.
 ```javascript
-function removeContentLengthHeader(req) {
-  delete req.headersOut['Content-Length'];
+function removeContentLengthHeader(r) {
+  delete r.headersOut['Content-Length'];
 }
 
 // Notice that we added the function name to the exports
@@ -159,7 +159,7 @@ const replacements = Object.entries({
   bark: 'cry'
 });
 
-function translate(req, data, flags) {
+function translate(r, data, flags) {
   // Apply all the replacements one at a time
   const newBody = replacements
     .reduce((acc, kvPair) => {
@@ -171,13 +171,13 @@ function translate(req, data, flags) {
 
   // Add the chunk to the buffer. `js_body_filter`
   // will handle collecting and transferring them
-  req.sendBuffer(newBody, flags);
+  r.sendBuffer(newBody, flags);
 }
 
-function removeContentLengthHeader(req) {
+function removeContentLengthHeader(r) {
   // Clear the `Content-Length` header to
   // cause nginx to used chunked transfer encoding
-  delete req.headersOut['Content-Length'];
+  delete r.headersOut['Content-Length'];
 }
 
 export default { translate, removeContentLengthHeader };

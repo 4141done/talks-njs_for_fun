@@ -102,7 +102,7 @@ We're going to take a bit of a detour here in order to show taking user input in
 
 We have another file called `helper.mjs` that looks like this:
 ```javascript
-function prepareContent(req) {
+function prepareContent(r) {
 }
 export default { prepareContent };
 ```
@@ -112,8 +112,8 @@ Let's make it export a function that reads the query param `content`:
 ```javascript
 const qs = require('querystring');
 
-function prepareContent(req) {
-  const rawContent = req.args.content;
+function prepareContent(r) {
+  const rawContent = r.args.content;
   return parseContent(rawContent);
 }
 
@@ -127,7 +127,7 @@ function parseContent(rawContent) {
 export default { prepareContent };
 ```
 
-First we read in the querystring from the njs request object with `req.args`.  The content will be escaped for inclusion in the uri, so we just want to unescape it.  For that we'll pull in njs' implementation of the `querystring` module to unescape the input.
+First we read in the querystring from the njs request object with `r.args`.  The content will be escaped for inclusion in the uri, so we just want to unescape it.  For that we'll pull in njs' implementation of the `querystring` module to unescape the input.
 
 The rest is just handling if there was no content passed.
 
@@ -230,8 +230,8 @@ export default { generateQRCode, getQRCodeContent: helper.prepareContent };
 ```javascript
 const qs = require('querystring');
 
-function prepareContent(req) {
-  const rawContent = req.args.content;
+function prepareContent(r) {
+  const rawContent = r.args.content;
   return parseContent(rawContent);
 }
 

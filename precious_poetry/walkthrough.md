@@ -33,7 +33,7 @@ Below that, in the `http` context you'll see the first njs directive we'll intro
 For example, let's take a look at the file `weather-auth.mjs`.
 
 ```javascript
-async function doAuth(req) {
+async function doAuth(r) {
   // Your content here
 }
 
@@ -58,8 +58,8 @@ This will serve our Precious Poetry from the root.  So `curl http://localhost:40
 This snippet also introduces our second njs directive: `js_content`.  This directive simply returns a response based on a script. To understand how this works, let's move to the relevant portion of our mock data script, `./mock_server/precious-poetry.mjs`.
 
 ```javascript
-function preciousWeatherPoetry(req){
-  req.return(200, JSON.stringify(poems));
+function preciousWeatherPoetry(r){
+  r.return(200, JSON.stringify(poems));
 }
 
 export default { preciousWeatherPoetry };
@@ -98,8 +98,8 @@ This adds the necessary endpoint.  The `internal` directive just makes sure that
 The `js_content` below that is our main auth script. Let's look at that.
 
 ```javascript
-async function doAuth(req) {
-    req.return(200);
+async function doAuth(r) {
+    r.return(200);
 }
 
 export default { doAuth };
@@ -109,7 +109,7 @@ This should look similar to our mock data script.  Remember that `auth_request` 
 
 Reload the server and verify that this still works. `curl http://localhost:4000/ | jq -r '.poems[0]`
 
-Now let's briefly change the response to be `req.return(401);`. `curl http://localhost:4000/`
+Now let's briefly change the response to be `r.return(401);`. `curl http://localhost:4000/`
 Now we see a 401 page so we know the `auth_request` directive is interacting with our njs script as we expect.  Now all we need to do is add the logic to bar smug people in good weather.
 
 ## Checking the weather
@@ -119,7 +119,7 @@ Next, set your api key as an environment variable `export WEATHER_API_KEY=yourke
 We first need to make sure we have the user's location as well as the API key. In `weather-auth.mjs` add:
 
 ```javascript
-  const location = req.headersIn['User-Location'];
+  const location = r.headersIn['User-Location'];
   const APIKey = process.env['WEATHER_API_KEY'];
 ```
 
@@ -134,7 +134,7 @@ Next we will add the code to call the weather API:
   const resp = await ngx.fetch(uri);
 
   if (!resp.ok) {
-    return req.return(401);
+    return r.return(401);
   }
 
   const weather = await resp.json();
@@ -166,9 +166,9 @@ So knowing this, I'll add some simple code:
   const conditionCode = weather.current.condition.code;
 
   if (conditionCode >= PARTLY_CLOUDY) {
-    req.return(200);
+    r.return(200);
   } else {
-    req.return(401);
+    r.return(401);
   }
 ```
 
@@ -209,8 +209,8 @@ http {
 ```javascript
 const PARTLY_CLOUDY = 1003;
 
-async function doAuth(req) {
-  const location = req.headersIn['User-Location'];
+async function doAuth(r) {
+  const location = r.headersIn['User-Location'];
   const APIKey = process.env['WEATHER_API_KEY'];
 
   const qs = require('querystring');
@@ -220,7 +220,7 @@ async function doAuth(req) {
   const resp = await ngx.fetch(uri);
 
   if (!resp.ok) {
-    return req.return(401);
+    return r.return(401);
   }
 
   const weather = await resp.json();
@@ -236,9 +236,9 @@ async function doAuth(req) {
   const conditionCode = weather.current.condition.code;
 
   if (conditionCode >= PARTLY_CLOUDY) {
-    req.return(200);
+    r.return(200);
   } else {
-    req.return(401);
+    r.return(401);
   }
 }
 
@@ -248,8 +248,8 @@ export default { doAuth };
 ### `./mock_server/precious-poetry`
 For this file, you can add the weather poems that come from your heart.
 ```javascript
-function preciousWeatherPoetry(req) {
-  req.headersOut['Content-Type'] = 'application/json';
+function preciousWeatherPoetry(r) {
+  r.headersOut['Content-Type'] = 'application/json';
 
   // Show up nicely when done like so: curl localhost:4002 | jq -r '.poems[0]'
   const poems = {
@@ -299,7 +299,7 @@ function preciousWeatherPoetry(req) {
     ]
   }
 
-  req.return(200, JSON.stringify(poems));
+  r.return(200, JSON.stringify(poems));
 }
 
 export default { preciousWeatherPoetry };

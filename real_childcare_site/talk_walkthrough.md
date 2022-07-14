@@ -27,7 +27,7 @@
 ```
 
 ```javascript
-    req.return(200);
+    r.return(200);
 ```
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -t`
 
@@ -36,7 +36,7 @@
 `curl http://localhost:4000/ | jq -r '.poems[0]'`
 
 ```javascript
-    req.return(401);
+    r.return(401);
 ```
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -t`
@@ -46,7 +46,7 @@
 `curl http://localhost:4000/`
 
 ```javascript
-  const location = req.headersIn['User-Location'];
+  const location = r.headersIn['User-Location'];
   const APIKey = process.env['WEATHER_API_KEY'];
 ```
 
@@ -58,7 +58,7 @@
   const resp = await ngx.fetch(uri);
 
   if (!resp.ok) {
-    return req.return(401);
+    return r.return(401);
   }
 
   const weather = await resp.json();
@@ -76,9 +76,9 @@
   const conditionCode = weather.current.condition.code;
 
   if (conditionCode >= PARTLY_CLOUDY) {
-    req.return(200);
+    r.return(200);
   } else {
-    req.return(401);
+    r.return(401);
   }
 ```
 
@@ -127,7 +127,7 @@ const replacements = Object.entries({
 ```
 
 ```javascript
-function translate(req, data, flags) {
+function translate(r, data, flags) {
   const newBody = replacements
     .reduce((acc, kvPair) => {
       const regex = kvPair[0];
@@ -138,7 +138,7 @@ function translate(req, data, flags) {
 
   // Add the chunk to the buffer. `js_body_filter`
   // will handle collecting and transferring them
-  req.sendBuffer(newBody, flags);
+  r.sendBuffer(newBody, flags);
 }
 ```
 `nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -t`
@@ -152,8 +152,8 @@ js_header_filter dogs_to_children.removeContentLengthHeader;
 ```
 
 ```javascript
-function removeContentLengthHeader(req) {
-  delete req.headersOut['Content-Length'];
+function removeContentLengthHeader(r) {
+  delete r.headersOut['Content-Length'];
 }
 
 export default { translate, removeContentLengthHeader };
@@ -221,8 +221,8 @@ const qs = require('querystring');
 
 function generateQRCode(r) {
   let content;
-  if (req.args.content) {
-    content = qs.unescape(req.args.content);
+  if (r.args.content) {
+    content = qs.unescape(r.args.content);
   } else {
     return r.return(400, "'content' query param is required");
   }

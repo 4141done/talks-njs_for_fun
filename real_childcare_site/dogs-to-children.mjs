@@ -1,5 +1,5 @@
-function translate(req, data, flags) {
-  req.sendBuffer(data, flags);
+function translate(r, data, flags) {
+  r.sendBuffer(data, flags);
 }
 
 export default { translate };

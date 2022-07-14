@@ -1,7 +1,7 @@
 const qs = require('querystring');
 
-function prepareContent(req) {
-  const rawContent = req.args.content;
+function prepareContent(r) {
+  const rawContent = r.args.content;
   return parseContent(rawContent);
 }
 
