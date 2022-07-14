@@ -9,7 +9,7 @@
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf`
 
-`curl http://localhost:4000 | jq -r '.poems[0]`
+`curl http://localhost:4000 | jq -r '.poems[0]'`
 
 
 ```nginx
@@ -33,7 +33,7 @@
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s reload`
 
-`curl http://localhost:4000/ | jq -r '.poems[0]`
+`curl http://localhost:4000/ | jq -r '.poems[0]'`
 
 ```javascript
     req.return(401);
@@ -86,10 +86,10 @@
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s reload`
 
-`curl -H 'User-Location: Seattle, WA' http://localhost:4000/ | jq -r '.poems[0]`
+`curl -H 'User-Location: Seattle, WA' http://localhost:4000/ | jq -r '.poems[0]'`
 
 
-`curl -H 'User-Location: Seattle, WA' http://localhost:4000/ | jq -r '.poems[0]`
+`curl -H 'User-Location: Seattle, WA' http://localhost:4000/ | jq -r '.poems[0]'`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s quit`
 
@@ -188,6 +188,8 @@ function generateQRCode(r) {
 // from the NGINX context needs to be exported here in the object.
 // It is also possible to just import a single function.
 export default { generateQRCode };
+```nginx
+      js_content qr_code.generateQRCode;
 ```
 
 
@@ -206,6 +208,13 @@ function generateQRCode(r) {
   r.return(200, code);
 }
 ```
+
+`node rollup.mjs`
+
+`nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -t`
+`nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf`
+
+`localhost:4003`
 
 ```javascript
 const qs = require('querystring');
@@ -231,10 +240,10 @@ function generateQRCode(r) {
   r.return(200, code);
 }
 ```
+`node rollup.mjs`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -s reload`
 
-
-`http://localhost:4000/?content=`
+`http://localhost:4003/?content=A proton walks into a bar. No one noticed it because protons are tiny and everywhere.`
