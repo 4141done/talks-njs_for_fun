@@ -12,4 +12,5 @@ function parseContent(rawContent) {
     return null;
   }
 }
+
 export default { prepareContent };
