@@ -20,7 +20,9 @@
     location /auth {
       internal;
 
-      # DNS for external request
+      # Configures name servers used to resolve names of
+      # upstream servers into addresses.
+      # Using CloudFlare DNS
       resolver 1.1.1.1;
       js_content weather_auth.doAuth;
     }
@@ -120,14 +122,14 @@ const replacements = Object.entries({
 ```
 
 ```javascript
-function translate(r, data, flags) {
+function translate(r, chunk, flags) {
   const newBody = replacements
     .reduce((acc, kvPair) => {
       const regex = kvPair[0];
       const replacement = kvPair[1];
 
       return acc.replace(new RegExp(regex, 'ig'), replacement)
-    }, data);
+    }, chunk);
 
   // Add the chunk to the buffer. `js_body_filter`
   // will handle collecting and transferring them
