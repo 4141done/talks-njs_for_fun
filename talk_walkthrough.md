@@ -29,7 +29,6 @@
 ```javascript
     r.return(200);
 ```
-`nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s reload`
 
@@ -38,8 +37,6 @@
 ```javascript
     r.return(401);
 ```
-
-`nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s reload`
 
@@ -82,14 +79,12 @@
   }
 ```
 
-`nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -t`
-
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s reload`
 
 `curl -H 'User-Location: Seattle, WA' http://localhost:4000/ | jq -r '.poems[0]'`
 
 
-`curl -H 'User-Location: Seattle, WA' http://localhost:4000/ | jq -r '.poems[0]'`
+`curl -H 'User-Location: Bhopal, India' http://localhost:4000/ | jq -r '.poems[0]'`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/precious_poetry/nginx.conf -s quit`
 
@@ -99,8 +94,6 @@
       proxy_pass http://localhost:4001;
     }
 ```
-
-`nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf`
 
@@ -118,11 +111,11 @@
 
 ```javascript
 const replacements = Object.entries({
-  'dog[^s]': 'human child',
-  dogs: 'human children',
-  'leash[^es]': 'a really fun toy',
-  park: 'fun playground for human games',
-  bark: 'cry'
+  'dog[^s]': 'human child ',
+  dogs: 'human children ',
+  'leash[^es]': 'a really fun toy ',
+  park: 'fun playground for human games ',
+  bark: 'cry '
 });
 ```
 
@@ -141,7 +134,6 @@ function translate(r, data, flags) {
   r.sendBuffer(newBody, flags);
 }
 ```
-`nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -s reload`
 
@@ -184,10 +176,9 @@ function generateQRCode(r) {
 
 }
 
-// NJS only supports `export default`.  Therefore anything you want to call
-// from the NGINX context needs to be exported here in the object.
-// It is also possible to just import a single function.
 export default { generateQRCode };
+```
+
 ```nginx
       js_content qr_code.generateQRCode;
 ```
@@ -211,7 +202,6 @@ function generateQRCode(r) {
 
 `node rollup.mjs`
 
-`nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -t`
 `nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf`
 
 `localhost:4003`
@@ -241,8 +231,6 @@ function generateQRCode(r) {
 }
 ```
 `node rollup.mjs`
-
-`nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -s reload`
 
