@@ -104,7 +104,6 @@
 ```nginx
       js_body_filter dogs_to_children.translate;
 ```
-`nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -t`
 
 `nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -s reload`
 
@@ -153,8 +152,6 @@ function removeContentLengthHeader(r) {
 export default { translate, removeContentLengthHeader };
 ```
 
-`nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -t`
-
 `nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -s reload`
 
 `curl -H "Accept: application/json" http://localhost:4002/listings/1 | jq`
@@ -165,26 +162,9 @@ export default { translate, removeContentLengthHeader };
 `nginx -c /Users/j.evans/talks/njs_for_fun/real_childcare_site/nginx.conf -s quit`
 
 ## QR Code
-
-```javascript
-import QRCode from 'qrcode-svg';
-
-const NGINX_GREEN = "#099639";
-const WHITE = "#000000";
-const QR_CODE_PADDING_PX = 4;
-const QR_CODE_SIZE_PX = 256;
-
-function generateQRCode(r) {
-
-}
-
-export default { generateQRCode };
-```
-
 ```nginx
       js_content qr_code.generateQRCode;
 ```
-
 
 ```javascript
 function generateQRCode(r) {
@@ -237,3 +217,5 @@ function generateQRCode(r) {
 `nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -s reload`
 
 `http://localhost:4003/?content=A proton walks into a bar. No one noticed it because protons are tiny and everywhere.`
+
+`nginx -c /Users/j.evans/talks/njs_for_fun/qr_code/nginx.conf -s quit`
