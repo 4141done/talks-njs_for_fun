@@ -4,4 +4,4 @@ async function doAuth(r) {
 
 }
 
-export default { doAuth };
+export default { doAuth: doAuth };
