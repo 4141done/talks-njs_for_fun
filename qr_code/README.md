@@ -5,11 +5,36 @@ Dynamically generate QR codes to impress your friends!
 * Slick hard coded NGINX color scheme
 * Encode anything you want in the QR code
 
-## Usage
-1. Run it: `nginx -c <this_dir>/nginx.conf`
+## Run the Project
+Before you start, you'll need to get an API key from [weatherapi.com](https://www.weatherapi.com/).  The key will be referenced in the rest of this readme as `YOUR_API_KEY`.
+
+### With Local nginx
+From the **root directory of this repo** run:
+1. Export `YOUR_API_KEY`: `export WEATHER_API_KEY=YOUR_API_KEY` (for example, `export WEATHER_API_KEY=dfdsfsdfdsfs8fds8fsd8f`)
+1. Test the config with: `nginx -c $(pwd)/precious_poetry/nginx.conf -t`
+1. Load the config with `nginx -c $(pwd)/precious_poetry/nginx.conf`
+
+After making changes to the files, the configuration may be reloaded with:
+`nginx -c $(pwd)/precious_poetry/nginx.conf -s reload`
+
+### Using Docker
+These instructions assume that you have docker or a compatible container engine installed on your system. If you want to use docker, but don't have this set up, see the the [Docker Installation Guide](https://docs.docker.com/engine/install/).
+
+From the **root directory of this repo** run:
+
+1. Build the container image: `docker build -t njs_examples .`
+1. Run the container
+`docker run --name precious_poetry -v $(pwd)/precious_poetry:/project -p 4000:4000 -e WEATHER_API_KEY='YOUR_API_KEY' --rm njs_examples`
+
+After making changes to the files, you can reload the configuration using the command:
+`docker exec precious_poetry nginx -s reload -c /project/nginx.conf`
+
+Alternately, you can stop and restart the container.
+
+## Creating QR Codes
 1. In your browser `http://localhost:4000?content=<your content here>`
 
-> Note: In some browsers, you'd need to worry about escaping your text for the uri.
+> Note: In some browsers, you'll need to worry about escaping your text for the uri.
 > If yours does not, open a node console and run `encodeURIComponent('my string')`
 > and paste the result into the uri above.
 
@@ -35,6 +60,16 @@ This includes the njs scripts as well as the `nginx.conf`
     ├── qr-code.mjs
     └── test-import.mjs
 ```
+
+| File/Folder         | Purpose                                                                                                                              |
+|---------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `qr-code.mjs`       | The primary njs script responsible for generating the svg markup of the QR code                                                      |
+| `nginx.conf`        | The main configuration for the nginx server                                                                                          |
+| `helper.mjs`        | Another njs script that provides some helper functions. This file is included mostly to illustrate code sharing between njs scripts. |
+| `rollup.mjs`        | Script to bundle and transpile files.                                                                                                |
+| `babel.config.json` | Configuration for the babel library which controls transpilation of language features and addition of polyfills.                     |
+| `package.json`      | Standard javascript manifest file containing dependencies and command definitions among other metadata.                              |
+|                     |                                                                                                                                      |
 
 ## Technical Details
 ### QR Code Generation

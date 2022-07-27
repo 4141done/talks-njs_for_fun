@@ -26,7 +26,7 @@ http {
   }
 }
 ```
-the `load_module` directive simple loads the module necessary to use njs which are a collection of `js_*` directives.
+the `load_module` directive simply loads the module necessary to use njs via the `js_*` directives defined [here](https://nginx.org/en/docs/http/ngx_http_js_module.html).  This is necessary when the module is compiled as a dynamic module.  
 
 Below that, in the `http` context you'll see the first njs directive we'll introduce which is `js_import`. This directive simply takes a path to a javascript file and optionally allows you to provide an alias for the functions or data exported from that file.
 
@@ -70,7 +70,7 @@ Here, the function `preciousWeatherPoetry` will be invoked by `js_content` and p
 So we can test this by reloading the config and calling
 `curl http://localhost:4000/ | jq -r '.poems[0]`
 
-## Adding Security
+## Adding Authorization
 Now that we are serving the Precious Poetry, we need to lock it down.  For this we will use the [ngx_http_auth_request_module](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html) to streamline the creation of a subrequest to an authorization endpoint that we will also write in njs.
 
 ```nginx
@@ -318,4 +318,5 @@ And as a reminder, the file structure looks like this:
 You can now try the whole request to see if you get let in.  Here are some premade test requests:
 `curl -H 'User-Location: Seattle, WA' http://localhost:4000/`
 `curl -H 'User-Location: Seoul, Korea' http://localhost:4000/`
+
 

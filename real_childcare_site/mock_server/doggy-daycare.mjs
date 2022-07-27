@@ -15,9 +15,13 @@ const LISTINGS = [
       they have enough dog food to eat.
     `
   }
-]
+];
 
 function getListing(r) {
+  r.variables.path_params; // This kicks off the parsing of params in the path
+  r.error(`LISTING ID IN THE MAIN LOGIC: ${r.variables.listing_id}`);
+  r.error(`dog ID IN THE MAIN LOGIC: ${r.variables.dog_id}`);
+  r.error(`fish ID IN THE MAIN LOGIC: ${r.variables.fish_id}`);
   const listingId = parseListingId(r.uri);
   const listing = getListingById(listingId);
 

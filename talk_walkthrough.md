@@ -23,7 +23,7 @@
       # Configures name servers used to resolve names of
       # upstream servers into addresses.
       # Using CloudFlare DNS
-      resolver 1.1.1.1;
+      a 1.1.1.1;
       js_content weather_auth.doAuth;
     }
 ```
