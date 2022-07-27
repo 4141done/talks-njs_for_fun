@@ -1,4 +1,4 @@
-import util from 'util.mjs';
+import util from './util.mjs';
 
 const LISTINGS = [
   {
@@ -19,15 +19,16 @@ const LISTINGS = [
 ];
 
 function getListing(r) {
-  util.triggerPathParamsParsing(r);
-
+  util.triggerPathParamParsing(r);
   const listingId = parseInt(r.variables.listing_id, 10);
   const listing = getListingById(listingId);
 
   if (listing) {
     r.return(200, JSON.stringify(listing));
   } else {
-    r.return(404, JSON.stringify({ error: 'Not Found' }));
+    // The 404 json error message will be auto-handled the downstream
+    // server using the `error_page` directive combined with `proxy_intercept_errors on;`
+    r.return(404);
   }
 }
 

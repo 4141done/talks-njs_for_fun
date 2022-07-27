@@ -51,12 +51,7 @@ function keyFromPattern(pattern) {
   return pattern.replace(":", "");
 }
 
-function triggerPathParamsParsing(r) {
-  // Referencing this variable kicks off the parsing of path params
-  // as it should be referenced in `js_set` in your config.
-  // Your reference should look like this:
-  // `js_set $path_params util.parsePathParams;`
-  r.variables.path_pattern;
+function triggerPathParamParsing(r) {
+  r.variables.path_params;
 }
-
-export default { parsePathParams, triggerPathParamsParsing };
+export default { parsePathParams, triggerPathParamParsing };
