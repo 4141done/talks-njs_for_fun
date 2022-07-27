@@ -9,12 +9,13 @@
  * 
  * When a request like `/foo/eugenio/bar` is received,
  * it will set the variable `$name` to "eugenio"
+ * @param {Object}  r - The njs request object
  */
 function parsePathParams(r) {
   // Currently we naively depend on an exact match in the
   // pattern and the location
-  let pattern = r.variables.path_pattern.split("/");
-  let uri = r.uri.split("/");
+  const pattern = r.variables.path_pattern.split("/");
+  const uri = r.uri.split("/");
 
   if (pattern.length === uri.length) {
     const params = doParsePathParams(pattern, uri);
@@ -50,4 +51,12 @@ function keyFromPattern(pattern) {
   return pattern.replace(":", "");
 }
 
-export default { parsePathParams };
+function triggerPathParamsParsing(r) {
+  // Referencing this variable kicks off the parsing of path params
+  // as it should be referenced in `js_set` in your config.
+  // Your reference should look like this:
+  // `js_set $path_params util.parsePathParams;`
+  r.variables.path_pattern;
+}
+
+export default { parsePathParams, triggerPathParamsParsing };

@@ -1,4 +1,5 @@
-const LISTING_ID_REGEX = /listings\/(\d+)/i;
+import util from 'util.mjs';
+
 const LISTINGS = [
   {
     title: 'Dog haven near to great park',
@@ -18,11 +19,9 @@ const LISTINGS = [
 ];
 
 function getListing(r) {
-  r.variables.path_params; // This kicks off the parsing of params in the path
-  r.error(`LISTING ID IN THE MAIN LOGIC: ${r.variables.listing_id}`);
-  r.error(`dog ID IN THE MAIN LOGIC: ${r.variables.dog_id}`);
-  r.error(`fish ID IN THE MAIN LOGIC: ${r.variables.fish_id}`);
-  const listingId = parseListingId(r.uri);
+  util.triggerPathParamsParsing(r);
+
+  const listingId = parseInt(r.variables.listing_id, 10);
   const listing = getListingById(listingId);
 
   if (listing) {
@@ -36,17 +35,6 @@ function getListingById(id) {
   if (!id) return null;
 
   return LISTINGS[id - 1];
-}
-
-// Very naive but does the job
-function parseListingId(uri) {
-  const match = LISTING_ID_REGEX.exec(uri);
-
-  if (match && match[1]) {
-    return parseInt(match[1], 10);
-  } else {
-    return null;
-  }
 }
 
 

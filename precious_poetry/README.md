@@ -4,6 +4,12 @@
 Before you start, you'll need to get an API key from [weatherapi.com](https://www.weatherapi.com/).  The key will be referenced in the rest of this readme as `YOUR_API_KEY`.
 
 ### With Local nginx
+Before starting, make sure you have the `http_auth_request_module` available.
+
+You can check this by running `nginx -V` and looking for the following flag: `--with-http_auth_request_module`.
+
+If it is not present, you'll either need to recompile your local nginx with this module or use the docker instructions below.
+
 From the **root directory of this repo** run:
 1. Export `YOUR_API_KEY`: `export WEATHER_API_KEY=YOUR_API_KEY` (for example, `export WEATHER_API_KEY=dfdsfsdfdsfs8fds8fsd8f`)
 1. Test the config with: `nginx -c $(pwd)/precious_poetry/nginx.conf -t`
@@ -37,7 +43,7 @@ You can put any reasonable place name in the location header.
 
 If you have `jq` installed you can format the beautify poetry nicely by picking individual poems out:
 
-`curl -H 'User-Location: Bhopal, India' http://localhost:4000/ | jq -r '.poems[0]`
+`curl -H 'User-Location: Bhopal, India' http://localhost:4000/ | jq -r '.poems[0]'`
 
 ### Learning and modifying
 To learn how the project works, you can reference [the walkthrough](walkthrough.md) for step-by-step code examples, or reference the code annotations.
