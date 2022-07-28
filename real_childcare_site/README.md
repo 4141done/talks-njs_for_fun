@@ -32,17 +32,13 @@ Alternately, you can stop and restart the container.
 ### After you get it running
 This site is full of listings (well, actually just two) so everything is served from `/listings` and the server is listening on port `4002` because that's how much cheese, cheddar, green, money, cash we're going to make from this idea.
 
-Because precious poetry comes from our hearts, responses are served from `/`.  Additionally, because 4000 is the number of individual raindrops I counted during the darkest months the winter, the web server is listening on port `4000`.
+Here are the two requests available:
 
-In order to view the precious poetry, make sure you specify a currently cloudy or rainy location and issue a request like the following:
+`curl -H "Accept: application/json" http://localhost:4002/listings/1`
+`curl -H "Accept: application/json" http://localhost:4002/listings/2`
 
-`curl -H 'User-Location: Bhopal, India' http://localhost:4002/`
-
-You can put any reasonable place name in the location header.
-
-If you have `jq` installed you can format the beautify poetry nicely by picking individual poems out:
-
-`curl -H 'User-Location: Bhopal, India' http://localhost:4000/ | jq -r '.poems[0]'`
+If you have [`jq`](https://stedolan.github.io/jq/) installed you can pipe the response to `jq` to get some nicer output:
+`curl -H "Accept: application/json" http://localhost:4002/listings/2 | jq`
 
 ### Learning and modifying
 To learn how the project works, you can reference [the walkthrough](walkthrough.md) for step-by-step code examples, or reference the code annotations.

@@ -41,9 +41,10 @@ In order to view the precious poetry, make sure you specify a currently cloudy o
 
 You can put any reasonable place name in the location header.
 
-If you have `jq` installed you can format the beautify poetry nicely by picking individual poems out:
+If you have [`jq`](https://stedolan.github.io/jq/) installed you can format the beautify poetry nicely by picking individual poems out:
 
 `curl -H 'User-Location: Bhopal, India' http://localhost:4000/ | jq -r '.poems[0]'`
+`curl -H 'User-Location: Bhopal, India' http://localhost:4000/ | jq -r '.poems[1]'`
 
 ### Learning and modifying
 To learn how the project works, you can reference [the walkthrough](walkthrough.md) for step-by-step code examples, or reference the code annotations.
