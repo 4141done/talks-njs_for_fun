@@ -6,6 +6,7 @@
 ├── dogs-to-children.mjs
 ├── mock_server
 │   ├── doggy-daycare.mjs
+│   ├── util.mjs
 │   └── doggy_daycare.conf
 └── nginx.conf
 ```
@@ -15,6 +16,7 @@
 | `dogs-to-children.mjs`             | The main njs script file                                                              |
 | `./mock_server/doggy-daycare.mjs`  | Njs script serving mock data for demo. Not necessary to modify.                       |
 | `./mock_server/doggy_daycare.conf` | NGINX server hooking njs script to serve mock data for demo.  No necessary to modify. |
+| `mock_server/util.mjs`          | A utility file that contains some experimental path parameter parsing code. This is not critical to the example but is an interesting example of javascript's integration with njs directives. |
 
 The `nginx.conf` file defines a simple server and imports the njs script.  Functions exported by the script `dogs-to-children.mjs`
 will be accessible via the alias `dogs_to_children`.
@@ -27,6 +29,7 @@ events {}
 http {
   # MOCK SERVER
   js_import listings from mock_server/doggy-daycare.mjs;
+  js_import util from mock_server/util.mjs;
   include mock_server/doggy_daycare.conf;
 
   # Our script
@@ -64,8 +67,8 @@ This tells us that we'll filter the body returned by the upstream using the func
 Let's open that file:
 
 ```javascript
-function translate(req, data, flags) {
-  req.sendBuffer(data, flags);
+function translate(r, data, flags) {
+  r.sendBuffer(data, flags);
 }
 
 export default { translate };
@@ -99,7 +102,7 @@ This code simply defines an object with keys that are regex compatible expressio
 
 Next, we'll add some code to perform the substitution and complete the `translate` function:
 ```javascript
-function translate(req, data, flags) {
+function translate(r, data, flags) {
   const newBody = replacements
     .reduce((acc, kvPair) => {
       const regex = kvPair[0];
@@ -110,7 +113,7 @@ function translate(req, data, flags) {
 
   // Add the chunk to the buffer. `js_body_filter`
   // will handle collecting and transferring them
-  req.sendBuffer(newBody, flags);
+  r.sendBuffer(newBody, flags);
 }
 ```
 
@@ -134,8 +137,8 @@ js_header_filter dogs_to_children.removeContentLengthHeader;
 
 Next, well create the function `removeContentLengthHeader` in `dogs-to-children.mjs`.
 ```javascript
-function removeContentLengthHeader(req) {
-  delete req.headersOut['Content-Length'];
+function removeContentLengthHeader(r) {
+  delete r.headersOut['Content-Length'];
 }
 
 // Notice that we added the function name to the exports
@@ -146,71 +149,3 @@ All we need to do is remove the `Content-Length` header and NGINX will use chunk
 
 ## Final tests
 `curl -H "Accept: application/json" http://localhost:4002/listings/1 | jq`
-
-## Full Code
-```javascript
-// Easily edit as an object, transform to this form:
-// [['dog[^s]', 'human child'], ..] for easy replacement
-const replacements = Object.entries({
-  'dog[^s]': 'human child',
-  dogs: 'human children',
-  'leash[^es]': 'a really fun toy',
-  park: 'fun playground for human games',
-  bark: 'cry'
-});
-
-function translate(req, data, flags) {
-  // Apply all the replacements one at a time
-  const newBody = replacements
-    .reduce((acc, kvPair) => {
-      const regex = kvPair[0];
-      const replacement = kvPair[1];
-
-      return acc.replace(new RegExp(regex, 'ig'), replacement)
-    }, data);
-
-  // Add the chunk to the buffer. `js_body_filter`
-  // will handle collecting and transferring them
-  req.sendBuffer(newBody, flags);
-}
-
-function removeContentLengthHeader(req) {
-  // Clear the `Content-Length` header to
-  // cause nginx to used chunked transfer encoding
-  delete req.headersOut['Content-Length'];
-}
-
-export default { translate, removeContentLengthHeader };
-```
-
-`nginx.conf`
-```nginx
-# load the njs module to allow us to use js_* directives
-load_module modules/ngx_http_js_module.so;
-
-events {}
-
-http {
-  # Old AirBnb for Dogs webapp I forgot how to maintain
-  js_import listings from mock_server/doggy-daycare.mjs;
-  include mock_server/doggy_daycare.conf;
-
-  # import the javascript module `dogs-to-children.mjs`
-  # aliased as `dogs_to_children`
-  js_import dogs_to_children from dogs-to-children.mjs;
-
-  server {
-    listen 4002;
-
-    location /listings/ {
-      # Applies the js function `translate` to the outbound body
-      js_body_filter dogs_to_children.translate;
-
-      # Applies the js function removeContentLengthHeader to
-      # modify outbound headers
-      js_header_filter dogs_to_children.removeContentLengthHeader;
-      proxy_pass http://localhost:4001;
-    }
-  }
-}
-```
