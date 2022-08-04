@@ -1,7 +1,14 @@
-function preciousWeatherPoetry(req) {
-  req.headersOut['Content-Type'] = 'application/json';
+/**
+ * This file just exists to serve mock responses
+ * containing beautify poetry.  If your heart is
+ * full of rainy love, please add a poem.
+ * 
+ * @module precious-poetry
+ */
 
-  // Show up nicely when done like so: curl localhost:4002 | jq -r '.poems[0]'
+function preciousWeatherPoetry(r) {
+  // Shows up nicely when queried like so:
+  // curl localhost:4002 | jq -r '.poems[0]'
   const poems = {
     poems: [
       `
@@ -44,12 +51,12 @@ function preciousWeatherPoetry(req) {
 
       But we are here.
 
-      Siblings Soggy Sockery
+      Siblings in Soggy Sockery
       `
     ]
   }
 
-  req.return(200, JSON.stringify(poems));
+  r.return(200, JSON.stringify(poems));
 }
 
 export default { preciousWeatherPoetry };
