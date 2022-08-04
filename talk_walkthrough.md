@@ -1,4 +1,6 @@
-# Talk Code Pasterino
+# Code Snippets for Talk
+The following snippets and commands are for use when giving the talk to minimize
+people having to watch me type and remember commands.
 
 ## Poetry
 ```nginx
