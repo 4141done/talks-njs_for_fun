@@ -10,7 +10,7 @@ The code examples are more heavily annotated than those presented in the talk.
 They may also differ slightly as the code examples in the talk were optimised for
 quick presentation.  The code examples in this repository should be considered a better example.
 
-However, nothing in this repository should be considered production ready.
+However, **nothing in this repository should be considered production ready.**
 
 ## Reporting bugs and asking questions
 If you find a bug or an area where the example code could be improved, please file
