@@ -1,5 +1,5 @@
 # Scripting NGINX with njs for Fun and (No) Profit: Code Examples
-This repository contains code examples from a talk originally given at NGINX Sprint 2.0.
+This repository contains code examples from a talk originally given at NGINX Sprint 3.0.
 
 ## Goals
 To provide a small amount of levity while showing the flexibility of having the ability
@@ -30,7 +30,7 @@ A `Dockerfile` is provided that contains a standard install of nginx. To run a p
 take a look at the `README.md` file in that project's folder for specific commands and notes.
 
 ## Projects
-This repository consists of three projects all of which illustrate difference usage of njs.
+This repository consists of three projects all of which illustrate different usages of njs.
 
 ### Precious Poetry
 Gate access to some beatiful poetry by using njs to call a public weather API and deny users
