@@ -33,7 +33,7 @@ take a look at the `README.md` file in that project's folder for specific comman
 This repository consists of three projects all of which illustrate different usages of njs.
 
 ### Precious Poetry
-Gate access to some beatiful poetry by using njs to call a public weather API and deny users
+Gate access to some beautiful poetry by using njs to call a public weather API and deny users
 in sunny areas.
 
 See the [README](precious_poetry/README.md) for more details on running the project
